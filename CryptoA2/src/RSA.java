@@ -25,11 +25,7 @@ public class RSA {
 			dxy = CryptoUtils.XGCD(phi, e);
 			d = dxy.getY();
 		}
-		if (d.compareTo(new BigInteger("0")) == -1) {
-			while (d.compareTo(new BigInteger("0")) == -1) {
-				d = d.add(phi);
-			}
-		}
+		d = d.mod(phi);
 		PrintStream out = new PrintStream(publicKeyFile);
 		out.println(n);
 		out.println(e);
@@ -55,7 +51,7 @@ public class RSA {
 			
 			String line = in.nextLine() + NEW_LINE;
 			for (int i = 0; i < line.length(); i++) {
-				BigInteger c = encrypt(n, e, new BigInteger(((int)line.charAt(i)) + ""));
+				BigInteger c = encrypt(n, e, new BigInteger(Integer.toString((int)line.charAt(i)));
 				out.println(c.toString());
 			}
 		}
