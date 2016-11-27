@@ -1,15 +1,15 @@
 import java.io.File;
 
 /**
- * Created by hunter on 11/16/16.
+ * Runs a MatrixMap cipher on the given user arguments..
  */
 public class CryptoA1 {
     public static void main(String [] args) {
-
+		
+		// Bail if args are not satisfied.
         if (args.length != 4) {
             throw new IllegalArgumentException("Invalid runtime parameters. Usage: java CryptoA1 [-e, -d] <inputFile> <outputFile> <keyFile>");
         }
-
         MatrixMap mm = new MatrixMap();
         try {
             if ("-e".equals(args[0])) {
