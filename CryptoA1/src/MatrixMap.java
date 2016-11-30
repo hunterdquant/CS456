@@ -17,6 +17,7 @@ public class MatrixMap {
 
     private double [][] key = null;
 
+    private double [][] map = null;
 
     public MatrixMap() {
 
@@ -39,6 +40,7 @@ public class MatrixMap {
                     key[i][j] = max + (max - min) * rand.nextInt();
                 }
             }
+            // Ensure the matrix is invertible
             Matrix m = new Matrix(key);
             if (m.det() != 0) {
                 keyGenerated = true;
@@ -47,13 +49,17 @@ public class MatrixMap {
         }
     }
 
+    /**
+     * Encrypts a string
+     *
+     * @param msg The string to encrypt
+     * @return An encrypted string of the input string.
+     */
     public String encrypt(String msg) {
-        double [][] chars = new double[CHAR_SET_SIZE][1];
-        for (int i = 0; i < chars.length; i++) {
-            chars[i][0] = i;
+        if (map == null) {
+            getMapping();
         }
-        Matrix b = new Matrix(key).times(new Matrix(chars));
-        double [][] map = b.getArray();
+        // Build string of ciphered characters
         String retVal = "";
         for (int i = 0; i < msg.length(); i++) {
             retVal = retVal + (map[msg.charAt(i)][0]) + NEW_LINE;
@@ -61,28 +67,34 @@ public class MatrixMap {
         return retVal;
     }
 
+    /**
+     * Decryptes a single character
+     *
+     * @param msg A ciphered message
+     * @return A deciphered character.
+     */
     public String decrypt(String msg) {
-        double [][] chars = new double[CHAR_SET_SIZE][1];
-        for (int i = 0; i < chars.length; i++) {
-            chars[i][0] = i;
+        if (map == null) {
+            getMapping();
         }
-        Matrix b = new Matrix(key).times(new Matrix(chars));
-        double [][] map = b.getArray();
-        Scanner tokenStream = new Scanner(msg);
-        String retVal = "";
-        while(tokenStream.hasNext()) {
-            String token = tokenStream.next();
-            String ch = "";
-            for (int j = 0; j < map.length; j++) {
-                if ((map[j][0] + "").equals(token)) {
-                    ch = (char)j + "";
-                }
+
+        // Find cipher match
+        String ch = "";
+        for (int j = 0; j < map.length; j++) {
+            if ((map[j][0] + "").equals(msg)) {
+                ch = (char)j + "";
             }
-            retVal += ch;
         }
-        return retVal;
+
+        return ch;
     }
 
+    /**
+     * Writes the secret key to a file
+     *
+     * @param file The file to write to.
+     * @throws FileNotFoundException
+     */
     public void writeKey(File file) throws FileNotFoundException {
         if (key == null) {
             throw new IllegalStateException("Cannot write key. Key not generated.");
@@ -97,6 +109,12 @@ public class MatrixMap {
         ps.close();
     }
 
+    /**
+     * Reads a secret key from a file
+     *
+     * @param file The file to read from.
+     * @throws FileNotFoundException
+     */
     public void readKey(File file) throws FileNotFoundException {
         key = new double[CHAR_SET_SIZE][CHAR_SET_SIZE];
         Scanner in = new Scanner(file);
@@ -111,16 +129,30 @@ public class MatrixMap {
         }
     }
 
+    /**
+     * Encrypts a text file.
+     *
+     * @param textInputFile The text to encrypt
+     * @param cipherOutputFile The ciphered text
+     * @throws FileNotFoundException
+     */
     public void encryptFile(File textInputFile, File cipherOutputFile) throws FileNotFoundException{
         Scanner in = new Scanner(textInputFile);
         PrintStream out = new PrintStream(cipherOutputFile);
 
         while (in.hasNextLine()) {
             String line = in.nextLine() + NEW_LINE;
-            out.println(encrypt(line));
+            out.print(encrypt(line));
         }
     }
 
+    /**
+     * Decrypts a cipher text file
+     *
+     * @param cipherInputFile The cipher to decrypt
+     * @param textOutputFile The decrypted text
+     * @throws FileNotFoundException
+     */
     public void decryptFile(File cipherInputFile, File textOutputFile) throws FileNotFoundException{
         Scanner in = new Scanner(cipherInputFile);
         PrintStream out = new PrintStream(textOutputFile);
@@ -129,5 +161,17 @@ public class MatrixMap {
             String line = in.nextLine();
             out.print(decrypt(line));
         }
+    }
+
+    /**
+     * Generates the character mapping
+     */
+    private void getMapping() {
+        double [][] chars = new double[CHAR_SET_SIZE][1];
+        for (int i = 0; i < chars.length; i++) {
+            chars[i][0] = i;
+        }
+        Matrix b = new Matrix(key).times(new Matrix(chars));
+        map = b.getArray();
     }
 }
